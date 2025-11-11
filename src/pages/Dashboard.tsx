@@ -27,15 +27,21 @@ const Dashboard = () => {
     <div className="min-h-screen">
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Live Monitoring</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-4xl font-display font-bold mb-2 gradient-text">Live Monitoring</h2>
+          <p className="text-muted-foreground text-lg">
             Real-time status of all firefighter helmets in the field
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {firefighters.map((firefighter) => (
-            <FirefighterCard key={firefighter.id} data={firefighter} />
+          {firefighters.map((firefighter, index) => (
+            <div 
+              key={firefighter.id}
+              style={{ animationDelay: `${index * 0.1}s` }}
+              className="animate-fade-in"
+            >
+              <FirefighterCard data={firefighter} />
+            </div>
           ))}
         </div>
       </div>

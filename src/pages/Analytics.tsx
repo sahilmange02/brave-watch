@@ -84,21 +84,25 @@ const Analytics = () => {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-3xl font-bold mb-2">Individual Analytics</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-4xl font-display font-bold mb-2 gradient-text">Individual Analytics</h2>
+            <p className="text-muted-foreground text-lg">
               Detailed metrics and trends for selected firefighter
             </p>
           </div>
 
           <Select value={selectedFirefighter} onValueChange={setSelectedFirefighter}>
-            <SelectTrigger className="w-[280px] bg-card border-border z-50">
+            <SelectTrigger className="w-[280px] glass-strong border-border-glass shadow-lg z-50 hover:border-primary/50 transition-all">
               <SelectValue placeholder="Select firefighter" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border z-50">
+            <SelectContent className="glass-strong border-border-glass shadow-2xl z-50 backdrop-blur-xl">
               {dummyFirefighters.map((ff) => (
-                <SelectItem key={ff.id} value={ff.id} className="cursor-pointer">
+                <SelectItem 
+                  key={ff.id} 
+                  value={ff.id} 
+                  className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10 transition-colors"
+                >
                   {ff.name} ({ff.id})
                 </SelectItem>
               ))}
@@ -107,8 +111,11 @@ const Analytics = () => {
         </div>
 
         <div className="grid gap-6">
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Temperature Trend</h3>
+          <Card className="p-6 glass gradient-border shadow-2xl">
+            <h3 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
+              <div className="h-1 w-8 bg-gradient-primary rounded-full"></div>
+              Temperature Trend
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -134,8 +141,11 @@ const Analytics = () => {
             </ResponsiveContainer>
           </Card>
 
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">MQ2 Gas Level</h3>
+          <Card className="p-6 glass gradient-border shadow-2xl">
+            <h3 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
+              <div className="h-1 w-8 bg-gradient-to-r from-chart-2 to-green-400 rounded-full"></div>
+              MQ2 Gas Level
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -162,8 +172,11 @@ const Analytics = () => {
           </Card>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Heart Rate Trend</h3>
+            <Card className="p-6 glass gradient-border shadow-2xl">
+              <h3 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
+                <div className="h-1 w-8 bg-gradient-to-r from-chart-3 to-purple-400 rounded-full"></div>
+                Heart Rate Trend
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -189,8 +202,11 @@ const Analytics = () => {
               </ResponsiveContainer>
             </Card>
 
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">SpO₂ Level Trend</h3>
+            <Card className="p-6 glass gradient-border shadow-2xl">
+              <h3 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
+                <div className="h-1 w-8 bg-gradient-to-r from-chart-5 to-blue-300 rounded-full"></div>
+                SpO₂ Level Trend
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -217,8 +233,11 @@ const Analytics = () => {
             </Card>
           </div>
 
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Alert Status Overview</h3>
+          <Card className="p-6 glass gradient-border shadow-2xl">
+            <h3 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
+              <div className="h-1 w-8 bg-gradient-to-r from-status-warning to-status-critical rounded-full"></div>
+              Alert Status Overview
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

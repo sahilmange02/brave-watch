@@ -3,43 +3,43 @@ import { Flame, LayoutDashboard, BarChart3, Settings } from "lucide-react";
 
 const Navigation = () => {
   return (
-    <nav className="bg-card border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-card/95">
+    <nav className="glass-strong border-b border-border-glass sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <Flame className="h-6 w-6 text-primary" />
+            <div className="bg-gradient-primary p-2.5 rounded-xl glow-primary shadow-lg">
+              <Flame className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold">
-              Fire<span className="text-primary">Guardian</span>
+            <h1 className="text-2xl font-display font-bold">
+              Fire<span className="gradient-text">Guardian</span>
             </h1>
           </div>
           
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
             <NavLink
               to="/"
               end
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              activeClassName="text-primary font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200"
+              activeClassName="text-primary font-medium bg-primary/10 backdrop-blur-sm"
             >
               <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+              <span className="font-medium">Dashboard</span>
             </NavLink>
             <NavLink
               to="/analytics"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              activeClassName="text-primary font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200"
+              activeClassName="text-primary font-medium bg-primary/10 backdrop-blur-sm"
             >
               <BarChart3 className="h-4 w-4" />
-              Analytics
+              <span className="font-medium">Analytics</span>
             </NavLink>
             <NavLink
               to="/settings"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              activeClassName="text-primary font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200"
+              activeClassName="text-primary font-medium bg-primary/10 backdrop-blur-sm"
             >
               <Settings className="h-4 w-4" />
-              Settings
+              <span className="font-medium">Settings</span>
             </NavLink>
           </div>
         </div>

@@ -8,17 +8,20 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* FireGuardian Dark Theme - Mission Control */
-    --background: 222 47% 11%;
+    /* FireGuardian Modern Glassmorphic Theme */
+    --background: 222 47% 8%;
+    --background-elevated: 222 47% 12%;
     --foreground: 210 40% 98%;
 
     --card: 222 47% 14%;
+    --card-glass: 222 47% 18%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 14%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 24 95% 53%;
+    --primary-glow: 24 95% 63%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
@@ -34,26 +37,36 @@ All colors MUST be HSL.
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 24%;
+    --border-glass: 217 33% 28%;
     --input: 217 33% 24%;
     --ring: 24 95% 53%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Status Colors */
     --status-safe: 142 76% 36%;
+    --status-safe-glow: 142 76% 46%;
     --status-warning: 45 93% 47%;
+    --status-warning-glow: 45 93% 57%;
     --status-critical: 0 84% 60%;
+    --status-critical-glow: 0 84% 70%;
 
-    /* Chart Colors */
+    /* Chart Colors with Gradients */
     --chart-1: 24 95% 53%;
+    --chart-1-light: 24 95% 63%;
     --chart-2: 142 76% 36%;
+    --chart-2-light: 142 76% 46%;
     --chart-3: 262 83% 58%;
+    --chart-3-light: 262 83% 68%;
     --chart-4: 45 93% 47%;
+    --chart-4-light: 45 93% 57%;
     --chart-5: 197 71% 73%;
+    --chart-5-light: 197 71% 83%;
 
-    /* Glow Effects */
-    --glow-critical: 0 84% 60%;
-    --glow-warning: 45 93% 47%;
+    /* Gradient Stops */
+    --gradient-start: 24 95% 53%;
+    --gradient-mid: 340 82% 52%;
+    --gradient-end: 262 83% 58%;
   }
 }
 
@@ -64,25 +77,139 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--background-elevated)) 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
+  /* Glassmorphism Effects */
+  .glass {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-strong {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-light {
+    background: rgba(30, 41, 59, 0.2);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Gradient Borders */
+  .gradient-border {
+    position: relative;
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-3)) 50%, hsl(var(--chart-2)) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Enhanced Glow Effects */
   .glow-critical {
-    box-shadow: 0 0 20px hsl(var(--glow-critical) / 0.3);
+    box-shadow: 
+      0 0 20px hsl(var(--status-critical) / 0.3),
+      0 0 40px hsl(var(--status-critical) / 0.1),
+      inset 0 0 20px hsl(var(--status-critical) / 0.05);
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
   .glow-warning {
-    box-shadow: 0 0 20px hsl(var(--glow-warning) / 0.3);
+    box-shadow: 
+      0 0 20px hsl(var(--status-warning) / 0.3),
+      0 0 40px hsl(var(--status-warning) / 0.1),
+      inset 0 0 20px hsl(var(--status-warning) / 0.05);
+  }
+
+  .glow-primary {
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.4),
+      0 0 40px hsl(var(--primary) / 0.2);
+  }
+
+  /* Floating Animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(var(--glow-critical) / 0.3);
+      box-shadow: 
+        0 0 20px hsl(var(--status-critical) / 0.3),
+        0 0 40px hsl(var(--status-critical) / 0.1),
+        inset 0 0 20px hsl(var(--status-critical) / 0.05);
     }
     50% {
-      box-shadow: 0 0 30px hsl(var(--glow-critical) / 0.6);
+      box-shadow: 
+        0 0 30px hsl(var(--status-critical) / 0.5),
+        0 0 60px hsl(var(--status-critical) / 0.2),
+        inset 0 0 30px hsl(var(--status-critical) / 0.1);
+    }
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      left: 100%;
     }
   }
 }
