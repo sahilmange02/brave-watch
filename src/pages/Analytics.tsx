@@ -1,120 +1,118 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { dummyFirefighters } from "@/data/dummyData";
-import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { generateHistoricalData } from "@/data/dummyData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const Analytics = () => {
-  const avgTemperature = dummyFirefighters.map((ff) => ({
-    name: ff.id,
-    temperature: ff.temperature,
+  const [selectedFirefighter, setSelectedFirefighter] = useState(dummyFirefighters[0].id);
+  const [historicalData, setHistoricalData] = useState(() => {
+    const ff = dummyFirefighters.find((f) => f.id === selectedFirefighter);
+    return ff ? generateHistoricalData(ff) : null;
+  });
+
+  useEffect(() => {
+    const firefighter = dummyFirefighters.find((ff) => ff.id === selectedFirefighter);
+    if (firefighter) {
+      setHistoricalData(generateHistoricalData(firefighter));
+    }
+  }, [selectedFirefighter]);
+
+  // Simulate real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHistoricalData((prev) => {
+        if (!prev) return prev;
+        
+        const newHistory = [...prev.history];
+        const lastPoint = newHistory[newHistory.length - 1];
+        
+        newHistory.shift();
+        newHistory.push({
+          timestamp: new Date().toISOString(),
+          temperature: Math.max(20, Math.min(100, lastPoint.temperature + (Math.random() - 0.5) * 5)),
+          mq2: Math.max(0, lastPoint.mq2 + (Math.random() - 0.5) * 50),
+          heartRate: Math.max(60, Math.min(180, lastPoint.heartRate + (Math.random() - 0.5) * 10)),
+          spo2: Math.max(80, Math.min(100, lastPoint.spo2 + (Math.random() - 0.5) * 3)),
+          flameDetected: Math.random() > 0.9 ? !lastPoint.flameDetected : lastPoint.flameDetected,
+        });
+
+        return {
+          ...prev,
+          history: newHistory,
+        };
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!historicalData) {
+    return <div>Loading...</div>;
+  }
+
+  const chartData = historicalData.history.map((point) => ({
+    timestamp: new Date(point.timestamp).toLocaleTimeString(),
+    temperature: point.temperature,
+    mq2_value: point.mq2,
+    heartRate: point.heartRate,
+    spo2: point.spo2,
+    flame_detected: point.flameDetected ? 1 : 0,
+    alert_status: point.temperature > 60 || point.mq2 > 400 || point.flameDetected ? 1 : 0,
   }));
-
-  const flameDetection = [
-    { name: "Flame Detected", value: dummyFirefighters.filter((ff) => ff.flameDetected).length },
-    { name: "No Flame", value: dummyFirefighters.filter((ff) => !ff.flameDetected).length },
-  ];
-
-  const vitalSigns = dummyFirefighters.map((ff) => ({
-    name: ff.id,
-    heartRate: ff.heartRate,
-    spo2: ff.spo2,
-  }));
-
-  const avgMQ2Trend = dummyFirefighters.map((ff, index) => ({
-    time: `T-${dummyFirefighters.length - index}`,
-    mq2: ff.mq2,
-  }));
-
-  const COLORS = ["hsl(var(--status-critical))", "hsl(var(--status-safe))"];
 
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Analytics Overview</h2>
-          <p className="text-muted-foreground">
-            Aggregated metrics and insights across all firefighter units
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Individual Analytics</h2>
+            <p className="text-muted-foreground">
+              Detailed metrics and trends for selected firefighter
+            </p>
+          </div>
+
+          <Select value={selectedFirefighter} onValueChange={setSelectedFirefighter}>
+            <SelectTrigger className="w-[280px] bg-card border-border z-50">
+              <SelectValue placeholder="Select firefighter" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-50">
+              {dummyFirefighters.map((ff) => (
+                <SelectItem key={ff.id} value={ff.id} className="cursor-pointer">
+                  {ff.name} ({ff.id})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-6">
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Average Temperature per Helmet</h3>
+            <h3 className="text-xl font-semibold mb-4">Temperature Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={avgTemperature}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="temperature" fill="hsl(var(--chart-1))" name="Temperature (°C)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Flame Detection Status</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={flameDetection}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {flameDetection.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Vital Signs Comparison</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={vitalSigns}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="heartRate" fill="hsl(var(--chart-3))" name="Heart Rate" />
-                  <Bar dataKey="spo2" fill="hsl(var(--chart-5))" name="SpO₂" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Average MQ2 Gas Level Trend</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={avgMQ2Trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="timestamp" stroke="hsl(var(--muted-foreground))" />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{
@@ -126,12 +124,125 @@ const Analytics = () => {
                 <Legend />
                 <Line
                   type="monotone"
-                  dataKey="mq2"
+                  dataKey="temperature"
+                  stroke="hsl(var(--chart-1))"
+                  strokeWidth={2}
+                  name="Temperature (°C)"
+                  dot={{ fill: "hsl(var(--chart-1))" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">MQ2 Gas Level</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="timestamp" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="mq2_value"
                   stroke="hsl(var(--chart-2))"
+                  fill="hsl(var(--chart-2) / 0.2)"
                   strokeWidth={2}
                   name="MQ2 (ppm)"
                 />
-              </LineChart>
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Heart Rate Trend</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="timestamp" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="heartRate"
+                    stroke="hsl(var(--chart-3))"
+                    strokeWidth={2}
+                    name="Heart Rate (bpm)"
+                    dot={{ fill: "hsl(var(--chart-3))" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4">SpO₂ Level Trend</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="timestamp" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" domain={[80, 100]} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="spo2"
+                    stroke="hsl(var(--chart-5))"
+                    strokeWidth={2}
+                    name="SpO₂ (%)"
+                    dot={{ fill: "hsl(var(--chart-5))" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Alert Status Overview</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="timestamp" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Legend />
+                <Bar
+                  dataKey="flame_detected"
+                  fill="hsl(var(--status-critical))"
+                  name="Flame Detected"
+                />
+                <Bar
+                  dataKey="alert_status"
+                  fill="hsl(var(--status-warning))"
+                  name="Alert Status"
+                />
+              </BarChart>
             </ResponsiveContainer>
           </Card>
         </div>
