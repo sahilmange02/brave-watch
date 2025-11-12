@@ -1,26 +1,47 @@
 import { useState, useEffect } from "react";
 import FirefighterCard from "@/components/FirefighterCard";
-import { dummyFirefighters } from "@/data/dummyData";
 import { FirefighterData } from "@/types/firefighter";
+import { fetchHelmets } from "@/lib/api";
+
+const mapServerToFirefighter = (item: any): FirefighterData => {
+  // Server uses helmet_id and different names; map into the frontend's type
+  const id = item.helmet_id || item.id || item.helmetId || "unknown";
+  return {
+    id: String(id),
+    name: item.name || `Helmet ${id}`,
+    temperature: item.temperature ?? item.temperature_current ?? item.temperature_value ?? 0,
+    mq2: item.mq2 ?? item.mq2_value ?? item.mq2Value ?? 0,
+    flameDetected: Boolean(item.flame_detected ?? item.flameDetected ?? item.flameDetected),
+    heartRate: item.heartRate ?? item.heart_rate ?? 0,
+    spo2: item.spo2 ?? 0,
+    timestamp: item.timestamp ?? undefined,
+  };
+};
 
 const Dashboard = () => {
-  const [firefighters, setFirefighters] = useState<FirefighterData[]>(dummyFirefighters);
+  const [firefighters, setFirefighters] = useState<FirefighterData[]>([]);
 
-  // Simulate real-time updates
+  // Poll backend for live helmet data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFirefighters((prev) =>
-        prev.map((ff) => ({
-          ...ff,
-          temperature: Math.max(20, Math.min(100, ff.temperature + (Math.random() - 0.5) * 3)),
-          mq2: Math.max(0, ff.mq2 + (Math.random() - 0.5) * 20),
-          heartRate: Math.max(60, Math.min(180, ff.heartRate + (Math.random() - 0.5) * 5)),
-          spo2: Math.max(80, Math.min(100, ff.spo2 + (Math.random() - 0.5) * 2)),
-        }))
-      );
-    }, 3000);
+    let mounted = true;
 
-    return () => clearInterval(interval);
+    const load = async () => {
+      try {
+        const data = await fetchHelmets();
+        if (!mounted) return;
+        const items = (data.helmets || []).map(mapServerToFirefighter);
+        setFirefighters(items);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    load();
+    const interval = setInterval(load, 3000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (

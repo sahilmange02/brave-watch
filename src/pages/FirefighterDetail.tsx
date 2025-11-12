@@ -4,16 +4,66 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, AlertTriangle } from "lucide-react";
-import { dummyFirefighters } from "@/data/dummyData";
-import { generateHistoricalData } from "@/data/dummyData";
 import { getOverallStatus, getStatusColor, getStatusText } from "@/utils/statusHelpers";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { cn } from "@/lib/utils";
+import { fetchHelmets } from "@/lib/api";
+
+const generateHistoricalDataLocal = (id: string, current: any) => {
+  const now = new Date();
+  const history: any[] = [];
+  for (let i = 30; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 60000).toISOString();
+    const variance = (Math.random() - 0.5) * 6;
+    history.push({
+      timestamp,
+      temperature: Math.max(20, Math.min(100, (current.temperature ?? 30) + variance)),
+      mq2: Math.max(0, (current.mq2 ?? current.mq2_value ?? 100) + Math.random() * 100 - 50),
+      heartRate: Math.max(60, Math.min(180, (current.heartRate ?? 90) + Math.random() * 20 - 10)),
+      spo2: Math.max(80, Math.min(100, (current.spo2 ?? 96) + Math.random() * 4 - 2)),
+      flameDetected: Boolean(current.flame_detected ?? current.flameDetected ?? false),
+    });
+  }
+  return { id, name: current.name || `Helmet ${id}`, history };
+};
 
 const FirefighterDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const firefighter = dummyFirefighters.find((ff) => ff.id === id);
+  const [firefighter, setFirefighter] = useState<any | null>(null);
+  const [historicalData, setHistoricalData] = useState<any | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const data = await fetchHelmets();
+        const items = data.helmets || [];
+        const found = items.find((it: any) => String(it.helmet_id || it.id) === String(id));
+        if (!mounted) return;
+        if (!found) {
+          setFirefighter(null);
+          return;
+        }
+        setFirefighter(found);
+
+        if (found.history && Array.isArray(found.history)) {
+          setHistoricalData({ id, name: found.name || `Helmet ${id}`, history: found.history });
+        } else {
+          setHistoricalData(generateHistoricalDataLocal(id || "unknown", found));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    load();
+    const interval = setInterval(load, 3000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [id]);
 
   if (!firefighter) {
     return (
@@ -26,36 +76,17 @@ const FirefighterDetail = () => {
     );
   }
 
-  const [historicalData, setHistoricalData] = useState(generateHistoricalData(firefighter));
-  const status = getOverallStatus(firefighter);
+  const status = getOverallStatus({
+    id: firefighter.id,
+    name: firefighter.name,
+    temperature: firefighter.temperature ?? firefighter.temperature_current,
+    mq2: firefighter.mq2 ?? firefighter.mq2_value,
+    heartRate: firefighter.heartRate ?? firefighter.heart_rate,
+    spo2: firefighter.spo2 ?? firefighter.spo2_value,
+    flameDetected: Boolean(firefighter.flame_detected ?? firefighter.flameDetected),
+  });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHistoricalData((prev) => {
-        const newHistory = [...prev.history];
-        const lastPoint = newHistory[newHistory.length - 1];
-        
-        newHistory.shift();
-        newHistory.push({
-          timestamp: new Date().toISOString(),
-          temperature: Math.max(20, Math.min(100, lastPoint.temperature + (Math.random() - 0.5) * 5)),
-          mq2: Math.max(0, lastPoint.mq2 + (Math.random() - 0.5) * 50),
-          heartRate: Math.max(60, Math.min(180, lastPoint.heartRate + (Math.random() - 0.5) * 10)),
-          spo2: Math.max(80, Math.min(100, lastPoint.spo2 + (Math.random() - 0.5) * 3)),
-          flameDetected: Math.random() > 0.9 ? !lastPoint.flameDetected : lastPoint.flameDetected,
-        });
-
-        return {
-          ...prev,
-          history: newHistory,
-        };
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const chartData = historicalData.history.map((point) => ({
+  const chartData = (historicalData?.history || []).map((point: any) => ({
     time: new Date(point.timestamp).toLocaleTimeString(),
     temperature: point.temperature,
     mq2: point.mq2,
