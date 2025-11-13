@@ -11,9 +11,9 @@ const mapServerToFirefighter = (item: any): FirefighterData => {
     name: item.name || `Helmet ${id}`,
     temperature: item.temperature ?? item.temperature_current ?? item.temperature_value ?? 0,
     mq2: item.mq2 ?? item.mq2_value ?? item.mq2Value ?? 0,
-    flameDetected: Boolean(item.flame_detected ?? item.flameDetected ?? item.flameDetected),
-    heartRate: item.heartRate ?? item.heart_rate ?? 0,
-    spo2: item.spo2 ?? 0,
+    flameDetected: Boolean(item.flame_detected ?? item.flameDetected ?? false),
+    heartRate: item.heartRate ?? item.heart_rate ?? item.heartrate ?? 0,
+    spo2: item.spo2 ?? item.sp02 ?? 0,
     timestamp: item.timestamp ?? undefined,
   };
 };

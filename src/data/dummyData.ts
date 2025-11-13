@@ -2,7 +2,7 @@ import { FirefighterData, FirefighterHistoricalData } from "@/types/firefighter"
 
 export const dummyFirefighters: FirefighterData[] = [
   {
-    id: "FF01",
+    id: "helmet_01",
     name: "John Doe",
     temperature: 45,
     mq2: 210,
@@ -11,7 +11,7 @@ export const dummyFirefighters: FirefighterData[] = [
     spo2: 96,
   },
   {
-    id: "FF02",
+    id: "helmet_02",
     name: "Alex Smith",
     temperature: 62,
     mq2: 480,
@@ -20,7 +20,7 @@ export const dummyFirefighters: FirefighterData[] = [
     spo2: 89,
   },
   {
-    id: "FF03",
+    id: "he;lmet_03",
     name: "Maria Garcia",
     temperature: 38,
     mq2: 120,
@@ -29,7 +29,7 @@ export const dummyFirefighters: FirefighterData[] = [
     spo2: 98,
   },
   {
-    id: "FF04",
+    id: "helmet_04",
     name: "David Chen",
     temperature: 52,
     mq2: 350,

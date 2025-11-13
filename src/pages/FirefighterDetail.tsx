@@ -12,15 +12,21 @@ import { fetchHelmets } from "@/lib/api";
 const generateHistoricalDataLocal = (id: string, current: any) => {
   const now = new Date();
   const history: any[] = [];
+  // Map server fields to UI fields
+  const currentHeartRate = current.heartRate ?? current.heart_rate ?? 90;
+  const currentSpo2 = current.spo2 ?? current.sp02 ?? 96;
+  const currentTemp = current.temperature ?? 30;
+  const currentMq2 = current.mq2 ?? current.mq2_value ?? 100;
+  
   for (let i = 30; i >= 0; i--) {
     const timestamp = new Date(now.getTime() - i * 60000).toISOString();
     const variance = (Math.random() - 0.5) * 6;
     history.push({
       timestamp,
-      temperature: Math.max(20, Math.min(100, (current.temperature ?? 30) + variance)),
-      mq2: Math.max(0, (current.mq2 ?? current.mq2_value ?? 100) + Math.random() * 100 - 50),
-      heartRate: Math.max(60, Math.min(180, (current.heartRate ?? 90) + Math.random() * 20 - 10)),
-      spo2: Math.max(80, Math.min(100, (current.spo2 ?? 96) + Math.random() * 4 - 2)),
+      temperature: Math.max(20, Math.min(100, currentTemp + variance)),
+      mq2: Math.max(0, currentMq2 + Math.random() * 100 - 50),
+      heartRate: Math.max(60, Math.min(180, currentHeartRate + Math.random() * 20 - 10)),
+      spo2: Math.max(80, Math.min(100, currentSpo2 + Math.random() * 4 - 2)),
       flameDetected: Boolean(current.flame_detected ?? current.flameDetected ?? false),
     });
   }
@@ -47,7 +53,8 @@ const FirefighterDetail = () => {
         }
         setFirefighter(found);
 
-        if (found.history && Array.isArray(found.history)) {
+        // Use history from server if available, otherwise generate local history
+        if (found.history && Array.isArray(found.history) && found.history.length > 0) {
           setHistoricalData({ id, name: found.name || `Helmet ${id}`, history: found.history });
         } else {
           setHistoricalData(generateHistoricalDataLocal(id || "unknown", found));
@@ -79,19 +86,19 @@ const FirefighterDetail = () => {
   const status = getOverallStatus({
     id: firefighter.id,
     name: firefighter.name,
-    temperature: firefighter.temperature ?? firefighter.temperature_current,
-    mq2: firefighter.mq2 ?? firefighter.mq2_value,
-    heartRate: firefighter.heartRate ?? firefighter.heart_rate,
-    spo2: firefighter.spo2 ?? firefighter.spo2_value,
-    flameDetected: Boolean(firefighter.flame_detected ?? firefighter.flameDetected),
+    temperature: firefighter.temperature ?? 0,
+    mq2: firefighter.mq2 ?? firefighter.mq2_value ?? 0,
+    heartRate: firefighter.heartRate ?? 0,
+    spo2: firefighter.spo2 ?? 0,
+    flameDetected: Boolean(firefighter.flame_detected ?? firefighter.flameDetected ?? false),
   });
 
   const chartData = (historicalData?.history || []).map((point: any) => ({
     time: new Date(point.timestamp).toLocaleTimeString(),
-    temperature: point.temperature,
-    mq2: point.mq2,
-    heartRate: point.heartRate,
-    spo2: point.spo2,
+    temperature: point.temperature ?? 0,
+    mq2: point.mq2 ?? point.mq2_value ?? 0,
+    heartRate: point.heartRate ?? point.heart_rate ?? 0,
+    spo2: point.spo2 ?? 0,
   }));
 
   return (
